@@ -271,82 +271,454 @@ generateYearOptions: function() {
     return options;
 },
     // Profile Page
-    profile: function() {
-        const user = JSON.parse(localStorage.getItem('currentUser'));
-        if (!user) {
-            setTimeout(() => router.navigate('login'), 100);
-            return '<div class="container" style="text-align: center; padding: 2rem;">Please login to view profile.</div>';
-        }
+   // Enhanced profile function
+profile: function() {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    if (!user) {
+        setTimeout(() => router.navigate('login'), 100);
+        return '<div class="container" style="text-align: center; padding: 2rem;">Please login to view profile.</div>';
+    }
 
+    return `
+        <section class="profile-header">
+            <div class="container">
+                <div class="profile-avatar" style="position: relative;">
+                    ${user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                    <button class="btn btn-outline" 
+                            style="position: absolute; bottom: -10px; right: -10px; background: white; border-radius: 50%; width: 40px; height: 40px; padding: 0;"
+                            onclick="utils.showNotification('Photo upload coming soon!')">
+                        <i class="fas fa-camera"></i>
+                    </button>
+                </div>
+                <h1>${user.name || 'User'}</h1>
+                <p>${user.batch ? 'Batch of ' + user.batch : ''} ${user.degree ? ' • ' + user.degree : ''}</p>
+                <p>${user.currentJob || 'Alumni'}</p>
+                
+                <div style="margin-top: 1rem;">
+                    <button class="btn btn-outline" style="border-color: white; color: white;" onclick="openEditProfile()">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </button>
+                    <button class="btn btn-outline" style="border-color: white; color: white; margin-left: 0.5rem;" onclick="utils.showNotification('Share feature coming soon!')">
+                        <i class="fas fa-share"></i> Share Profile
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section class="container">
+            <div class="profile-info">
+                <!-- Profile Stats -->
+                <div class="profile-stats">
+                    <div class="stat-card">
+                        <span class="stat-number">${user.connections || 12}</span>
+                        <span class="stat-label">Connections</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">${user.eventsAttended || 5}</span>
+                        <span class="stat-label">Events Attended</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">${user.jobsPosted || 3}</span>
+                        <span class="stat-label">Jobs Posted</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">${user.batch ? new Date().getFullYear() - user.batch : 8}</span>
+                        <span class="stat-label">Years Alumni</span>
+                    </div>
+                </div>
+
+                <!-- Main Profile Content -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+                    <!-- Left Column -->
+                    <div>
+                        <!-- About Section -->
+                        <div class="profile-section">
+                            <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 1rem;">
+                                <h3>About</h3>
+                                <button class="btn btn-outline btn-sm" onclick="openEditProfile()">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                            </div>
+                            <p>${user.bio || 'No bio provided yet. Tell others about yourself!'}</p>
+                        </div>
+
+                        <!-- Experience Section -->
+                        <div class="profile-section">
+                            <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 1rem;">
+                                <h3>Experience</h3>
+                                <button class="btn btn-outline btn-sm" onclick="openExperienceModal()">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            </div>
+                            ${this.renderExperience(user.experience)}
+                        </div>
+
+                        <!-- Education Section -->
+                        <div class="profile-section">
+                            <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 1rem;">
+                                <h3>Education</h3>
+                                <button class="btn btn-outline btn-sm" onclick="openEducationModal()">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            </div>
+                            ${this.renderEducation(user)}
+                        </div>
+
+                        <!-- Skills Section -->
+                        <div class="profile-section">
+                            <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 1rem;">
+                                <h3>Skills</h3>
+                                <button class="btn btn-outline btn-sm" onclick="openSkillsModal()">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            </div>
+                            <div class="alumni-skills">
+                                ${user.skills ? user.skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('') : 'No skills added yet'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div>
+                        <!-- Contact Info -->
+                        <div class="profile-section">
+                            <h3>Contact Information</h3>
+                            <div style="display: grid; gap: 1rem;">
+                                ${user.email ? `
+                                    <div>
+                                        <strong><i class="fas fa-envelope"></i> Email:</strong><br>
+                                        <a href="mailto:${user.email}">${user.email}</a>
+                                    </div>
+                                ` : ''}
+                                
+                                ${user.linkedin ? `
+                                    <div>
+                                        <strong><i class="fab fa-linkedin"></i> LinkedIn:</strong><br>
+                                        <a href="${user.linkedin}" target="_blank">View Profile</a>
+                                    </div>
+                                ` : ''}
+                                
+                                ${user.location ? `
+                                    <div>
+                                        <strong><i class="fas fa-map-marker-alt"></i> Location:</strong><br>
+                                        ${user.location}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="profile-section">
+                            <h3>Quick Actions</h3>
+                            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                <button class="btn btn-primary" onclick="utils.showNotification('Profile download coming soon!')">
+                                    <i class="fas fa-download"></i> Download Profile
+                                </button>
+                                <button class="btn btn-outline" onclick="utils.showNotification('Network settings coming soon!')">
+                                    <i class="fas fa-cog"></i> Privacy Settings
+                                </button>
+                                <button class="btn btn-outline" onclick="utils.showNotification('Export feature coming soon!')">
+                                    <i class="fas fa-file-export"></i> Export Data
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Profile Completion -->
+                        <div class="profile-section">
+                            <h3>Profile Strength</h3>
+                            ${this.renderProfileCompletion(user)}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Edit Profile Modal -->
+        ${this.renderEditProfileModal(user)}
+        
+        <!-- Experience Modal -->
+        ${this.renderExperienceModal()}
+        
+        <!-- Education Modal -->
+        ${this.renderEducationModal()}
+        
+        <!-- Skills Modal -->
+        ${this.renderSkillsModal(user)}
+    `;
+},
+
+// Add helper functions for profile rendering
+renderExperience: function(experience) {
+    if (!experience || experience.length === 0) {
         return `
-            <section class="profile-header">
-                <div class="container">
-                    <div class="profile-avatar">
-                        ${user.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                    </div>
-                    <h1>${user.name || 'User'}</h1>
-                    <p>${user.batch ? 'Batch of ' + user.batch : ''} ${user.degree ? ' • ' + user.degree : ''}</p>
-                </div>
-            </section>
-
-            <section class="container">
-                <div class="profile-info">
-                    <div class="profile-stats">
-                        <div class="stat-card">
-                            <span class="stat-number">12</span>
-                            <span class="stat-label">Connections</span>
-                        </div>
-                        <div class="stat-card">
-                            <span class="stat-number">5</span>
-                            <span class="stat-label">Events Attended</span>
-                        </div>
-                        <div class="stat-card">
-                            <span class="stat-number">3</span>
-                            <span class="stat-label">Jobs Posted</span>
-                        </div>
-                        <div class="stat-card">
-                            <span class="stat-number">8</span>
-                            <span class="stat-label">Years Alumni</span>
-                        </div>
-                    </div>
-
-                    <div class="profile-section">
-                        <h3>Personal Information</h3>
-                        <div style="display: grid; gap: 1rem;">
-                            <div>
-                                <strong>Email:</strong> ${user.email || 'Not provided'}
-                            </div>
-                            <div>
-                                <strong>Batch:</strong> ${user.batch || 'Not provided'}
-                            </div>
-                            <div>
-                                <strong>Degree:</strong> ${user.degree || 'Not provided'}
-                            </div>
-                            <div>
-                                <strong>Member Since:</strong> ${new Date().getFullYear()}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="profile-section">
-                        <h3>Quick Actions</h3>
-                        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                            <button class="btn btn-primary" onclick="utils.showNotification('Edit profile feature coming soon!')">
-                                Edit Profile
-                            </button>
-                            <button class="btn btn-outline" onclick="utils.showNotification('Network settings coming soon!')">
-                                Network Settings
-                            </button>
-                            <button class="btn btn-outline" onclick="utils.showNotification('Privacy settings coming soon!')">
-                                Privacy Settings
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            <div style="text-align: center; padding: 2rem; background: #f8f9fa; border-radius: 0.5rem;">
+                <p style="color: var(--text-light); margin-bottom: 1rem;">No experience added yet</p>
+                <button class="btn btn-primary" onclick="openExperienceModal()">
+                    <i class="fas fa-plus"></i> Add Your First Experience
+                </button>
+            </div>
         `;
-    },
+    }
 
+    return experience.map(exp => `
+        <div class="experience-item" style="padding: 1rem; border: 1px solid var(--border); border-radius: 0.5rem; margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: between; align-items: start;">
+                <div style="flex: 1;">
+                    <h4 style="margin: 0 0 0.25rem 0;">${exp.position}</h4>
+                    <p style="margin: 0 0 0.25rem 0; color: var(--primary); font-weight: 600;">${exp.company}</p>
+                    <p style="margin: 0 0 0.25rem 0; color: var(--text-light);">
+                        ${utils.formatDate(exp.startDate)} - ${exp.current ? 'Present' : utils.formatDate(exp.endDate)}
+                    </p>
+                    <p style="margin: 0; color: var(--text-light);">${exp.location}</p>
+                    ${exp.description ? `<p style="margin: 1rem 0 0 0;">${exp.description}</p>` : ''}
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="editExperience('${exp.id}')">
+                    <i class="fas fa-edit"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+},
+
+renderEducation: function(user) {
+    return `
+        <div class="education-item" style="padding: 1rem; border: 1px solid var(--border); border-radius: 0.5rem;">
+            <h4 style="margin: 0 0 0.25rem 0;">${user.degree || 'Degree not specified'}</h4>
+            <p style="margin: 0 0 0.25rem 0; color: var(--primary); font-weight: 600;">Alma Mater University</p>
+            <p style="margin: 0 0 0.25rem 0; color: var(--text-light);">
+                ${user.batch ? 'Batch of ' + user.batch : 'Graduation year not specified'}
+            </p>
+            ${user.specialization ? `<p style="margin: 0; color: var(--text-light);">Specialization: ${user.specialization}</p>` : ''}
+        </div>
+    `;
+},
+
+renderProfileCompletion: function(user) {
+    const completion = this.calculateProfileCompletion(user);
+    return `
+        <div>
+            <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 0.5rem;">
+                <span>${completion.percentage}% Complete</span>
+                <span>${completion.completed}/${completion.total} sections</span>
+            </div>
+            <div style="background: #e5e7eb; border-radius: 1rem; height: 8px; overflow: hidden;">
+                <div style="background: var(--primary); height: 100%; width: ${completion.percentage}%; transition: width 0.3s ease;"></div>
+            </div>
+            <div style="margin-top: 1rem;">
+                ${completion.missing.map(item => `
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <i class="fas fa-exclamation-circle" style="color: var(--accent);"></i>
+                        <span style="font-size: 0.875rem;">Add ${item}</span>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+},
+
+calculateProfileCompletion: function(user) {
+    const sections = [
+        { key: 'name', label: 'Full Name' },
+        { key: 'email', label: 'Email' },
+        { key: 'batch', label: 'Graduation Year' },
+        { key: 'degree', label: 'Degree' },
+        { key: 'currentJob', label: 'Current Position' },
+        { key: 'company', label: 'Company' },
+        { key: 'location', label: 'Location' },
+        { key: 'skills', label: 'Skills' },
+        { key: 'bio', label: 'Bio' }
+    ];
+
+    const completed = sections.filter(section => user[section.key]).length;
+    const missing = sections.filter(section => !user[section.key]).map(section => section.label);
+
+    return {
+        completed,
+        total: sections.length,
+        percentage: Math.round((completed / sections.length) * 100),
+        missing
+    };
+},
+
+// Modal rendering functions
+renderEditProfileModal: function(user) {
+    return `
+        <div id="editProfileModal" class="modal" style="display: none;">
+            <div class="modal-content" style="max-width: 600px;">
+                <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 2rem;">
+                    <h2>Edit Profile</h2>
+                    <button class="btn btn-outline" onclick="closeEditProfile()" style="border: none; font-size: 1.5rem;">&times;</button>
+                </div>
+                
+                <form onsubmit="saveProfile(event)" id="editProfileForm">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-input" name="name" value="${user.name || ''}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" name="email" value="${user.email || ''}" required>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Graduation Year</label>
+                            <select class="form-input" name="batch" required>
+                                <option value="">Select Year</option>
+                                ${this.generateYearOptions()}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Degree</label>
+                            <select class="form-input" name="degree" required>
+                                <option value="">Select Degree</option>
+                                <option value="B.Tech Computer Science">B.Tech Computer Science</option>
+                                <option value="B.Tech Mechanical Engineering">B.Tech Mechanical Engineering</option>
+                                <option value="MBA">MBA</option>
+                                <option value="BBA">BBA</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Specialization</label>
+                        <input type="text" class="form-input" name="specialization" value="${user.specialization || ''}">
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Current Position</label>
+                            <input type="text" class="form-input" name="currentJob" value="${user.currentJob || ''}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Company</label>
+                            <input type="text" class="form-input" name="company" value="${user.company || ''}">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Location</label>
+                        <input type="text" class="form-input" name="location" value="${user.location || ''}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">LinkedIn Profile</label>
+                        <input type="url" class="form-input" name="linkedin" value="${user.linkedin || ''}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Bio</label>
+                        <textarea class="form-textarea" name="bio" placeholder="Tell us about yourself...">${user.bio || ''}</textarea>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+                        <button type="button" class="btn btn-outline" onclick="closeEditProfile()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+},
+
+renderExperienceModal: function() {
+    return `
+        <div id="experienceModal" class="modal" style="display: none;">
+            <div class="modal-content" style="max-width: 500px;">
+                <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 2rem;">
+                    <h2>Add Experience</h2>
+                    <button class="btn btn-outline" onclick="closeExperienceModal()" style="border: none; font-size: 1.5rem;">&times;</button>
+                </div>
+                
+                <form onsubmit="saveExperience(event)" id="experienceForm">
+                    <div class="form-group">
+                        <label class="form-label">Position *</label>
+                        <input type="text" class="form-input" name="position" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Company *</label>
+                        <input type="text" class="form-input" name="company" required>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Start Date *</label>
+                            <input type="month" class="form-input" name="startDate" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">End Date</label>
+                            <input type="month" class="form-input" name="endDate">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                                <input type="checkbox" name="current" onchange="toggleEndDate()"> I currently work here
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Location</label>
+                        <input type="text" class="form-input" name="location">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-textarea" name="description" placeholder="Describe your role and responsibilities..."></textarea>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+                        <button type="button" class="btn btn-outline" onclick="closeExperienceModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Experience</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+},
+
+renderSkillsModal: function(user) {
+    const popularSkills = ['JavaScript', 'Python', 'React', 'Node.js', 'Java', 'AWS', 'Docker', 'Kubernetes', 'Machine Learning', 'Data Analysis', 'Project Management', 'Leadership', 'Communication', 'Agile Methodology'];
+    
+    return `
+        <div id="skillsModal" class="modal" style="display: none;">
+            <div class="modal-content" style="max-width: 500px;">
+                <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 2rem;">
+                    <h2>Add Skills</h2>
+                    <button class="btn btn-outline" onclick="closeSkillsModal()" style="border: none; font-size: 1.5rem;">&times;</button>
+                </div>
+                
+                <form onsubmit="saveSkills(event)" id="skillsForm">
+                    <div class="form-group">
+                        <label class="form-label">Your Skills (comma separated)</label>
+                        <input type="text" class="form-input" name="skills" value="${user.skills ? user.skills.join(', ') : ''}" placeholder="e.g., JavaScript, React, Project Management">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Popular Skills</label>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;">
+                            ${popularSkills.map(skill => `
+                                <button type="button" class="skill-tag" onclick="addSkill('${skill}')" style="cursor: pointer;">
+                                    ${skill}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+                        <button type="button" class="btn btn-outline" onclick="closeSkillsModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Skills</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+},
     // Helper functions for rendering components
     renderAlumniCards: function(alumniList) {
         return alumniList.map(alumni => `

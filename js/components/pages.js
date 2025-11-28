@@ -155,47 +155,121 @@ const pages = {
     },
 
     // Register Page
-    register: function() {
-        return `
-            <section class="container">
-                <div class="form-container">
-                    <h2 style="text-align: center; margin-bottom: 2rem;">Join Alumni Network</h2>
-                    <form onsubmit="auth.register(event)">
-                        <div class="form-group">
-                            <label class="form-label">Full Name</label>
-                            <input type="text" class="form-input" placeholder="Enter your full name" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Email</label>
-                            <input type="email" class="form-input" placeholder="Enter your email" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Graduation Year</label>
-                            <input type="number" class="form-input" placeholder="e.g., 2015" min="1950" max="2030" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Degree</label>
-                            <input type="text" class="form-input" placeholder="e.g., B.Tech Computer Science" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Password</label>
-                            <input type="password" class="form-input" placeholder="Create a password" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Confirm Password</label>
-                            <input type="password" class="form-input" placeholder="Confirm your password" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary" style="width: 100%;">Create Account</button>
-                    </form>
-                    <p style="text-align: center; margin-top: 1rem;">
-                        Already have an account? 
-                        <a href="#login" onclick="router.navigate('login')" style="color: var(--primary);">Login here</a>
-                    </p>
-                </div>
-            </section>
-        `;
-    },
+    // Update the register function in pages.js
+register: function() {
+    return `
+        <section class="container">
+            <div class="form-container">
+                <h2 style="text-align: center; margin-bottom: 2rem;">Complete Your Alumni Profile</h2>
+                <form onsubmit="auth.register(event)" id="registrationForm">
+                    <div class="form-group">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" class="form-input" name="fullName" placeholder="Enter your full name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Email Address *</label>
+                        <input type="email" class="form-input" name="email" placeholder="Enter your email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Graduation Year *</label>
+                        <select class="form-input" name="batch" required>
+                            <option value="">Select Graduation Year</option>
+                            ${this.generateYearOptions()}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Degree Program *</label>
+                        <select class="form-input" name="degree" required>
+                            <option value="">Select Your Degree</option>
+                            <option value="B.Tech Computer Science">B.Tech Computer Science</option>
+                            <option value="B.Tech Mechanical Engineering">B.Tech Mechanical Engineering</option>
+                            <option value="B.Tech Electrical Engineering">B.Tech Electrical Engineering</option>
+                            <option value="B.Tech Civil Engineering">B.Tech Civil Engineering</option>
+                            <option value="MBA">MBA</option>
+                            <option value="BBA">BBA</option>
+                            <option value="B.Sc Physics">B.Sc Physics</option>
+                            <option value="B.Sc Chemistry">B.Sc Chemistry</option>
+                            <option value="B.A Economics">B.A Economics</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Specialization</label>
+                        <input type="text" class="form-input" name="specialization" placeholder="e.g., Artificial Intelligence, Finance">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Current Position</label>
+                        <input type="text" class="form-input" name="currentJob" placeholder="e.g., Software Engineer at Google">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Company</label>
+                        <input type="text" class="form-input" name="company" placeholder="Your current company">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Location</label>
+                        <input type="text" class="form-input" name="location" placeholder="City, Country">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Skills (comma separated)</label>
+                        <input type="text" class="form-input" name="skills" placeholder="e.g., JavaScript, React, Project Management">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">LinkedIn Profile</label>
+                        <input type="url" class="form-input" name="linkedin" placeholder="https://linkedin.com/in/yourprofile">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Bio</label>
+                        <textarea class="form-textarea" name="bio" placeholder="Tell us about yourself, your career journey, and interests..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Password *</label>
+                        <input type="password" class="form-input" name="password" placeholder="Create a password" required minlength="6">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Confirm Password *</label>
+                        <input type="password" class="form-input" name="confirmPassword" placeholder="Confirm your password" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" name="privacy" required>
+                            I agree to the <a href="#" onclick="utils.showNotification('Privacy policy coming soon!')">Privacy Policy</a> and 
+                            <a href="#" onclick="utils.showNotification('Terms of service coming soon!')">Terms of Service</a>
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Create Alumni Profile</button>
+                </form>
+                <p style="text-align: center; margin-top: 1rem;">
+                    Already have an account? 
+                    <a href="#login" onclick="router.navigate('login')" style="color: var(--primary);">Login here</a>
+                </p>
+            </div>
+        </section>
+    `;
+},
 
+// Add helper function for year options
+generateYearOptions: function() {
+    const currentYear = new Date().getFullYear();
+    let options = '';
+    for (let year = currentYear; year >= 1970; year--) {
+        options += `<option value="${year}">${year}</option>`;
+    }
+    return options;
+},
     // Profile Page
     profile: function() {
         const user = JSON.parse(localStorage.getItem('currentUser'));
